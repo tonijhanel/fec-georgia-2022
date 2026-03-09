@@ -1,0 +1,21 @@
+
+-- ============================================================
+-- Example queries to try once loaded
+-- ============================================================
+
+-- Who are the top 10 donors by total amount?
+MATCH (d:Donor)-[r:DONATED_TO]->()
+RETURN d.name, sum(r.amount) AS total
+ORDER BY total DESC LIMIT 10;
+
+-- Which candidates share the most donors?
+MATCH (d:Donor)-[:DONATED_TO]->(:Committee)-[:SUPPORTS]->(c:Candidate)
+WITH d, collect(DISTINCT c.name) AS candidates
+WHERE size(candidates) > 1
+RETURN d.name, candidates;
+
+-- Which advocacy segment contributes most to each candidate?
+MATCH (seg:Segment)<-[:WORKS_IN]-(d:Donor)-[r:DONATED_TO]->
+      (:Committee)-[:SUPPORTS]->(c:Candidate)
+RETURN c.name, seg.name, round(sum(r.amount)) AS total
+ORDER BY c.name, total DESC;
